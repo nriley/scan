@@ -55,8 +55,21 @@ def extract_source(title, hint):
 EagleFiler = app(id='com.c-command.EagleFiler')
 Paper = EagleFiler.documents['Paper.eflibrary']
 
-sources = os.path.exists(PREFERENCES_PATH) and \
-          readPlist(PREFERENCES_PATH).get('Sources', []) or []
+if not Paper.exists():
+    EagleFiler.open(os.path.expanduser('~/Documents/Paper/Paper.eflibrary'))
+
+def read_sources():
+    return readPlist(PREFERENCES_PATH).get('Sources', [])
+
+if os.path.exists(PREFERENCES_PATH):
+    try:
+        sources = read_sources()
+    except:
+        from subprocess import call
+        call(['plutil', '-convert', 'xml1', PREFERENCES_PATH])
+        sources = read_sources()
+else:
+    sources = []
 
 def update_all():
     for record in Paper.library_records[its.kind=='PDF']():
