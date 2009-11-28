@@ -101,7 +101,7 @@ def scan_one():
     SystemEvents = app(id='com.apple.systemevents')
     acro_process = SystemEvents.application_processes[u'Acrobat']
 
-    filename = datetime.now().strftime('Scanned Document %y%m%d %H%m%S')
+    filename = datetime.now().strftime('Scanned Document %y%m%d %H%M%S')
 
     SA = ScriptingAddition()
     SA.activate()
