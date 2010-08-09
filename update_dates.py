@@ -152,7 +152,7 @@ def scan_one():
     scanned_file = scanned_document.file_alias()
     scanned_document.close()
 
-    record = Paper.import_(files=[scanned_file])[0]
+    record = Paper.import_(files=[scanned_file], deleting_afterwards=True)[0]
     contents = record.contents()
     m = re.search('(%s)' % '|'.join(map(re.escape, sources)), contents,
                   re.IGNORECASE)
