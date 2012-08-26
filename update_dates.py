@@ -105,20 +105,19 @@ def scan_one():
 
     SA = ScriptingAddition()
     SA.activate()
-    try:
-        while True:
-            result = SA.display_dialog('How many pages do you wish to scan?',
-                                       buttons=['Cancel', 'Scan'],
-                                       cancel_button=1, default_button=2,
-                                       default_answer='1')
-            try:
-                pages = int(result[k.text_returned])
-            except ValueError:
-                continue
-            if pages > 0:
-                break
-    except CommandError:
-        return False
+    while True:
+        result = SA.display_dialog('How many pages do you wish to scan?',
+                                   buttons=['Cancel', 'Scan'],
+                                   cancel_button=1, default_button=2,
+                                   default_answer='1')
+        if result is None:
+            return False
+        try:
+            pages = int(result[k.text_returned])
+        except ValueError:
+            continue
+        if pages > 0:
+            break
 
     Acrobat.activate()
 
@@ -149,7 +148,7 @@ def scan_one():
         acro_scan_window.buttons['OK'].click()
 
     scanned_document = Acrobat.documents['%s.pdf' % filename]
-    scanned_file = scanned_document.file_alias()
+    scanned_file = scanned_document.file_alias(timeout=0)
     scanned_document.close()
 
     record = Paper.import_(files=[scanned_file], deleting_afterwards=True)[0]
@@ -176,6 +175,4 @@ def scan_one():
 # XXX incremental source recording from EagleFiler (use tag to record)
 
 while scan_one():
-    pass
-
-writePlist({'Sources': sources}, PREFERENCES_PATH)
+    writePlist({'Sources': sources}, PREFERENCES_PATH)
