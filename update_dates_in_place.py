@@ -172,8 +172,6 @@ def update_all():
     for source in sorted(new_sources):
         print '\t%s' % source
 
-    # XXX sort by date added!
-
     write_sources()
 
 def title_date_record(record):
