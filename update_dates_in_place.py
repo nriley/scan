@@ -179,8 +179,6 @@ def update_all():
     write_sources()
 
 def title_date_record(record):
-    import pdb; pdb.Pdb().set_trace()
-
     Paper_window.selected_records.set([record])
 
     title = record.title()
