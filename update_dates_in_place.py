@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from appscript import *
 from datetime import datetime
 from itertools import izip
@@ -61,7 +63,8 @@ def extract_date(text, match, re_date, formats):
             no_format.append((matched, format, e))
             continue
         if not match or (match.year, match.month) == (parsed.year, parsed.month):
-            return parsed.date(), no_format
+            if 1990 < parsed.year < 2100:
+                return parsed.date(), no_format
         no_format.append(m.group(matched_format))
     return None, no_format
 
@@ -77,12 +80,13 @@ EagleFiler = app(id='com.c-command.EagleFiler')
 Paper = EagleFiler.library_documents['Paper.eflibrary']
 
 def read_sources():
-    return readPlist(PREFERENCES_PATH).get('Sources', [])
+    return map(unicode, readPlist(PREFERENCES_PATH).get('Sources', []))
 
 def write_sources():
      writePlist({'Sources': sources}, PREFERENCES_PATH)
 
 def add_source(source, contents):
+    source = unicode(source)
     if source and re.search(re.escape(source), contents, re.IGNORECASE):
         if source in sources:
             sources.remove(source)
@@ -175,21 +179,27 @@ def update_all():
     write_sources()
 
 def title_date_record(record):
-    contents = record.text_content()
-
-    m = re.search('(%s)' % '|'.join(map(re.escape, sources)), contents,
-                  re.IGNORECASE)
-    if m:
-        # use the saved source's case
-        title = sources[map(str.lower, sources).index(m.group(1).lower())]
-    else:
-        title = '???'
-
-    date, no_format = extract_date_from_contents(contents)
-    if date:
-        title += date.strftime(' %Y-%m')
+    import pdb; pdb.Pdb().set_trace()
 
     Paper_window.selected_records.set([record])
+
+    title = record.title()
+    contents = record.text_content()
+    date, no_format = extract_date_from_contents(contents)
+    title_date, no_format = extract_date_from_title(title)
+
+    if not title_date:
+        m = re.search('(%s)' % '|'.join(map(re.escape, sources)), contents,
+                      re.IGNORECASE)
+        if m:
+            # use the saved source's case
+            title = sources[map(unicode.lower, sources).index(m.group(1).lower())]
+        else:
+            title = '???'
+
+        if date:
+            title += date.strftime(' %Y-%m')
+
     EagleFiler.activate()
 
     SA = ScriptingAddition()
@@ -202,8 +212,11 @@ def title_date_record(record):
         return
 
     title = result[k.text_returned]
+    title_date, no_format = extract_date_from_title(title)
 
-    date, no_format = extract_date_from_title(title)
+    if title_date and (not date or (title_date.year, title_date.month) !=
+                                   (date.year, date.month)):
+        date = title_date
 
     if date:
         record.creation_date.set(date)
@@ -235,6 +248,17 @@ def optimize_record(record):
     Acrobat.documents[filename].save(to=file)
     Acrobat.documents[filename].close()
 
+def update_selected():
+    selected_records = Paper_window.selected_records()
+
+    for record in selected_records:
+        title_date_record(record)
+
+    for record in selected_records:
+        if record.universal_type_identifier() != 'com.adobe.pdf':
+            continue
+        optimize_record(record)
+
 if __name__ == '__main__':
 
     if not Paper.exists():
@@ -265,14 +289,7 @@ if __name__ == '__main__':
         sources = []
 
     # update_all()
-
-    selected_records = Paper_window.selected_records()
-
-    for record in selected_records:
-        title_date_record(record)
-
-    for record in selected_records:
-        optimize_record(record)
+    update_selected()
 
     EagleFiler.activate()
 
