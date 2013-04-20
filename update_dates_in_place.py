@@ -219,7 +219,8 @@ def title_date_record(record):
     if date:
         record.creation_date.set(date)
 
-    if add_source(extract_source_from_title(title, date), record.text_content()):
+    if add_source(extract_source_from_title(title, title_date),
+                  record.text_content()):
         write_sources()
 
     record.title.set(title)
