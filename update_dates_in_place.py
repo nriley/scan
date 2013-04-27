@@ -224,6 +224,7 @@ def title_date_record(record):
         write_sources()
 
     record.title.set(title)
+    record.filename.set(title)
 
 def optimize_record(record):
     Acrobat = app(id='com.adobe.Acrobat.Pro')
