@@ -8,8 +8,6 @@ from plistlib import readPlist, writePlist
 import aem
 import os
 import re
-import sys
-import time
 
 PREFERENCES_PATH = \
     os.path.expanduser('~/Library/Preferences/net.sabi.UpdateDates.plist')
