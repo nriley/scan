@@ -57,7 +57,7 @@ def extract_date(text, match, re_date, formats):
         matched = m.group(matched_format).replace(' ', '')
         try:
             parsed = datetime.strptime(matched, format)
-        except ValueError, e: # not a date
+        except ValueError as e: # not a date
             no_format.append((matched, format, e))
             continue
         if not match or (match.year, match.month) == (parsed.year, parsed.month):
