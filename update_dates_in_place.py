@@ -12,7 +12,8 @@ import re
 PREFERENCES_PATH = \
     os.path.expanduser('~/Library/Preferences/net.sabi.UpdateDates.plist')
 
-DATE_FORMATS = (('%m/%d/%y', r'\d{1,2}/\d{1,2}/\d{1,2}'         ), # T-Mobile
+DATE_FORMATS = (('%m-%d-%y', r'\d{1,2}-\d{1,2}-\d{2}'           ), # Busey new
+                ('%m/%d/%y', r'\d{1,2}/\d{1,2}/\d{1,2}'         ), # T-Mobile
                 ('%m.%d.%y', r'\d{1,2}\.\d{1,2}\.\d{1,2}'       ), # iFixit
                 ('%b%d,%Y',  r'[A-Z][a-z][a-z] ?\d{1,2}, ?\d{4}'), # AmerenIP
                 ('%B%d,%Y',  r'[A-Z][a-z]+ *\d{1,2}, *\d{4}'    ), # Amazon
