@@ -4,7 +4,8 @@ from appscript import *
 from datetime import datetime
 from itertools import izip
 from osax import *
-from plistlib import readPlist, writePlist
+from plistlib import readPlist, readPlistFromString, writePlist
+from subprocess import call, check_output, CalledProcessError
 import aem
 import os
 import re
@@ -92,6 +93,15 @@ def add_source(source, contents):
         else:
             return True # source is new
         sources.insert(0, source)  # most recently referenced ones at top
+
+def has_encoding_application(path, encoding_application):
+    try:
+        metadata = readPlistFromString(check_output(['/usr/bin/mdls', '-plist', '-', path]))
+    except CalledProcessError:
+        return False
+    if not isinstance(metadata, dict):
+        return False
+    return encoding_application in metadata.get('kMDItemEncodingApplications', [])
 
 def update_all():
     record_count = 0
@@ -237,6 +247,9 @@ def optimize_record(record):
     if creator == 'CARO':
         return # already written by Acrobat
 
+    if not has_encoding_application(file.path, 'IJ Scan Utility'):
+        return # not a scanned document
+
     Acrobat.activate()
     Acrobat.open(record.file())
 
@@ -281,7 +294,6 @@ if __name__ == '__main__':
         try:
             sources = read_sources()
         except:
-            from subprocess import call
             call(['/usr/bin/plutil', '-convert', 'xml1', PREFERENCES_PATH])
             sources = read_sources()
     else:
