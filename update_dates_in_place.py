@@ -207,10 +207,7 @@ def title_date_record(record):
         if date:
             title += date.strftime(' %Y-%m')
 
-    EagleFiler.activate()
-
-    SA = ScriptingAddition()
-    SA.activate()
+    SA = ScriptingAddition(id='com.apple.systemevents')
     result = SA.display_dialog('Title this document:',
                                buttons=['Cancel', 'Title'],
                                cancel_button=1, default_button=2,
