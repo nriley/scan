@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from appscript import *
 from datetime import datetime
-from itertools import izip
+
 from osax import *
-from plistlib import readPlist, readPlistFromString, writePlist
+from plistlib import load, readPlistFromBytes, writePlist
 from subprocess import call, check_output, CalledProcessError
 import aem
 import os
@@ -80,13 +80,13 @@ EagleFiler = app(id='com.c-command.EagleFiler')
 Paper = EagleFiler.library_documents['Paper.eflibrary']
 
 def read_sources():
-    return map(unicode, readPlist(PREFERENCES_PATH).get('Sources', []))
+    return list(map(str, load(open(PREFERENCES_PATH, 'rb')).get('Sources', [])))
 
 def write_sources():
      writePlist({'Sources': sources}, PREFERENCES_PATH)
 
 def add_source(source, contents):
-    source = unicode(source)
+    source = str(source)
     if source and re.search(re.escape(source), contents, re.IGNORECASE):
         if source in sources:
             sources.remove(source)
@@ -96,7 +96,7 @@ def add_source(source, contents):
 
 def has_encoding_application(path, encoding_application):
     try:
-        metadata = readPlistFromString(check_output(['/usr/bin/mdls', '-plist', '-', path]))
+        metadata = readPlistFromBytes(check_output(['/usr/bin/mdls', '-plist', '-', path]))
     except CalledProcessError:
         return False
     if not isinstance(metadata, dict):
@@ -113,7 +113,7 @@ def update_all():
     record_ids = Paper.library_records.id()
     record_utis = Paper.library_records.universal_type_identifier()
 
-    for record_id, record_uti in izip(record_ids, record_utis):
+    for record_id, record_uti in zip(record_ids, record_utis):
         if record_uti != 'com.adobe.pdf':
             continue
 
@@ -136,9 +136,9 @@ def update_all():
                                                               title_date)
 
         if not contents_date:
-            print '%s (extracted: %s)' % (title, title_date)
+            print('%s (extracted: %s)' % (title, title_date))
             for nf in no_format:
-                print '  ', nf
+                print('  ', nf)
             if not title_date:
                 continue
 
@@ -154,36 +154,36 @@ def update_all():
             EagleFiler.activate()
             record.assigned_tag_names.set(tags)
 
-            disposition = raw_input()
+            disposition = input()
             if disposition == 'i':
                 tags.append('impossible')
                 record.note_text.set('')
                 record.assigned_tag_names.set(tags)
             elif disposition == 'd':
                 while True:
-                    date_format = raw_input('date format: ')
+                    date_format = input('date format: ')
                     if not date_format: break
-                    regex = raw_input('regex: ')
+                    regex = input('regex: ')
                     if not regex: break
                     date_formats = ((date_format.replace(' ', ''), regex),)
-                    print extract_date(contents, title_date,
-                                       re_wrap(date_formats), date_formats)
+                    print(extract_date(contents, title_date,
+                                       re_wrap(date_formats), date_formats))
             elif disposition == 'q':
                 return
 
         record.creation_date.set(contents_date or title_date)
         # print 'date:', contents_date or title_date
 
-    print
-    print '-' * 50
-    print '   Total records:', record_count
-    print '  No regex match:', no_regex_count
-    print ' No format match:', no_format_count
-    print 'Successful match:', record_count - no_regex_count - no_format_count
+    print()
+    print('-' * 50)
+    print('   Total records:', record_count)
+    print('  No regex match:', no_regex_count)
+    print(' No format match:', no_format_count)
+    print('Successful match:', record_count - no_regex_count - no_format_count)
 
-    print '%d new sources:' % len(new_sources)
+    print('%d new sources:' % len(new_sources))
     for source in sorted(new_sources):
-        print '\t%s' % source
+        print('\t%s' % source)
 
     write_sources()
 
@@ -200,14 +200,14 @@ def title_date_record(record):
                       re.IGNORECASE)
         if m:
             # use the saved source's case
-            title = sources[map(unicode.lower, sources).index(m.group(1).lower())]
+            title = sources[list(map(str.lower, sources)).index(m.group(1).lower())]
         else:
             title = '???'
 
         if date:
             title += date.strftime(' %Y-%m')
 
-    SA = ScriptingAddition(id='com.apple.systemevents')
+    SA = OSAX(id='com.apple.systemevents')
     result = SA.display_dialog('Title this document:',
                                buttons=['Cancel', 'Title'],
                                cancel_button=1, default_button=2,
