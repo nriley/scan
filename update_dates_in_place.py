@@ -86,13 +86,20 @@ def write_sources():
      dump({'Sources': sources}, open(PREFERENCES_PATH, 'wb'))
 
 def add_source(source, contents):
+    print(f'Considering adding source "{source}".')
     source = str(source)
     if source and re.search(re.escape(source), contents, re.IGNORECASE):
-        if source in sources:
-            sources.remove(source)
+        print('- Found source in document, adding.')
+        source_is_new = source not in sources
+        if source_is_new:
+            print('- Source is new.')
         else:
-            return True # source is new
+            print('- Source is not new; moving to top of list.')
+            sources.remove(source)
         sources.insert(0, source)  # most recently referenced ones at top
+        return source_is_new
+    else:
+        print('- Source not found in document; not added.')
 
 def has_encoding_application(path, encoding_application):
     try:
