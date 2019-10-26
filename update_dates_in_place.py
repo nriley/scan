@@ -4,7 +4,7 @@ from appscript import *
 from datetime import datetime
 
 from osax import *
-from plistlib import load, readPlistFromBytes, writePlist
+from plistlib import load, loads, dump
 from subprocess import call, check_output, CalledProcessError
 import aem
 import os
@@ -83,7 +83,7 @@ def read_sources():
     return list(map(str, load(open(PREFERENCES_PATH, 'rb')).get('Sources', [])))
 
 def write_sources():
-     writePlist({'Sources': sources}, PREFERENCES_PATH)
+     dump({'Sources': sources}, open(PREFERENCES_PATH, 'wb'))
 
 def add_source(source, contents):
     source = str(source)
@@ -96,7 +96,7 @@ def add_source(source, contents):
 
 def has_encoding_application(path, encoding_application):
     try:
-        metadata = readPlistFromBytes(check_output(['/usr/bin/mdls', '-plist', '-', path]))
+        metadata = loads(check_output(['/usr/bin/mdls', '-plist', '-', path]))
     except CalledProcessError:
         return False
     if not isinstance(metadata, dict):
