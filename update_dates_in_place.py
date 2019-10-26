@@ -208,11 +208,15 @@ def title_date_record(record):
             title += date.strftime(' %Y-%m')
 
     SA = OSAX(id='com.apple.systemevents')
-    result = SA.display_dialog('Title this document:',
-                               buttons=['Cancel', 'Title'],
-                               cancel_button=1, default_button=2,
-                               default_answer=title)
-    if result is None:
+
+    try:
+        result = SA.display_dialog('Title this document:',
+                                buttons=['Cancel', 'Title'],
+                                cancel_button=1, default_button=2,
+                                default_answer=title)
+    except CommandError:
+        return
+    if not result:
         return
 
     title = result[k.text_returned]
